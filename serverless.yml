@@ -1,0 +1,100 @@
+service: kakinotane-img
+frameworkVersion: "^3"
+
+
+params:
+  default:
+    prefix: ${sls:stage}-${self:service}
+    table_kakinotane_user: ${param:prefix}-kakinotane_user
+    bucket_kakinotane: ${aws:region}-${aws:accountId}-${param:prefix}
+
+
+    #custom:
+    #  pythonRequirements:
+    #    useStaticCache: false
+    #    useDownloadCache: false
+    #    slim: true
+
+package:
+  patterns:
+    - '!node_modules/**'
+    - '!venv/**'
+    - '!package.json'
+    - '!package-lock.json'
+
+provider:
+  name: aws
+  #runtime: python3.8
+  region: ap-northeast-1
+  ecr:
+    # In this section you can define images that will be built locally and uploaded to ECR
+    images:
+      appimage:
+        path: ./
+  stackName: ${param:prefix}
+  iamManagedPolicies:
+    - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+    - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+    - 'arn:aws:iam::aws:policy/AWSLambdaExecute'
+  environment:
+    Stage: ${sls:stage}
+    LOG_LEVEL: INFO
+    LINE_CHANNEL_SECRET: ${param:line_channel_secret}
+    LINE_CHANNEL_ACCESS_TOKEN: ${param:line_access_token}
+    TABLE_KAKINOTANE_USER: ${param:table_kakinotane_user}
+    BUCKET_KAKINOTANE: ${param:bucket_kakinotane}
+  architecture: arm64
+
+
+functions:
+  line-webhook:
+    image:
+      name: appimage
+    name: ${param:prefix}-line-webhook
+    #handler: line_webhook_lambda_handler.lambda_handler
+    timeout: 900
+    memorySize: 512
+    url:
+      cors: false
+
+resources:
+  Resources:
+    TableKakinotaneUser:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${param:table_kakinotane_user}
+        AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+    S3BucketKakinotane:
+      Type: 'AWS::S3::Bucket'
+      Properties:
+        BucketName: ${param:bucket_kakinotane}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+
+    S3BucketPolicyKakinotane:
+      Type: 'AWS::S3::BucketPolicy'
+      Properties:
+        Bucket:
+          Ref: S3BucketKakinotane
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal: '*'
+              Action: 's3:GetObject'
+              Resource:
+                Fn::Join:
+                  - ''
+                  - - 'arn:aws:s3:::'
+                    - Ref: S3BucketKakinotane
+                    - '/*'
