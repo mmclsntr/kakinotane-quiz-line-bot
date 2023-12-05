@@ -58,8 +58,8 @@ def place_images_randomly(background, img, n):
 
 def create_kakinotane_image(ratio: float,
                             output_file_name: str = "output.jpg",
-                            kakinotane_img_file_name: str = "kakinotane_photo.png",
-                            peanut_img_file_name: str = "peanut_photo.png",
+                            kakinotane_img_file_name: str = "assets/kakinotane_photo.png",
+                            peanut_img_file_name: str = "assets/peanut_photo.png",
                             ):
     # 画像の読み込み
     img_a = cv2.imread(kakinotane_img_file_name, cv2.IMREAD_UNCHANGED)
