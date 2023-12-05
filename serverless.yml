@@ -8,13 +8,6 @@ params:
     table_kakinotane_user: ${param:prefix}-kakinotane_user
     bucket_kakinotane: ${aws:region}-${aws:accountId}-${param:prefix}
 
-
-    #custom:
-    #  pythonRequirements:
-    #    useStaticCache: false
-    #    useDownloadCache: false
-    #    slim: true
-
 package:
   patterns:
     - '!node_modules/**'
@@ -24,10 +17,8 @@ package:
 
 provider:
   name: aws
-  #runtime: python3.8
   region: ap-northeast-1
   ecr:
-    # In this section you can define images that will be built locally and uploaded to ECR
     images:
       appimage:
         path: ./
@@ -51,7 +42,6 @@ functions:
     image:
       name: appimage
     name: ${param:prefix}-line-webhook
-    #handler: line_webhook_lambda_handler.lambda_handler
     timeout: 900
     memorySize: 512
     url:
