@@ -64,18 +64,18 @@ def generate_kakinotane_image(percentage: int, user_id: str, bucket_name: str) -
     return image_url
 
 
-def create_selections(step: int) -> tuple:
+def create_selections(step: int, select_range: int = 20) -> tuple:
     percent_1 = random.randrange(MIN_PERCENT + step * 2, MAX_PERCENT - step * 2, step)
 
-    if percent_1 + 20 >= MAX_PERCENT:
+    if percent_1 + select_range >= MAX_PERCENT:
         percent_2 = percent_1 + random.randrange(0, MAX_PERCENT - percent_1, step) + step
     else:
-        percent_2 = percent_1 + random.randrange(0, 20, step) + step
+        percent_2 = percent_1 + random.randrange(0, select_range, step) + step
 
-    if percent_1 - 20 <= MIN_PERCENT:
+    if percent_1 - select_range <= MIN_PERCENT:
         percent_3 = percent_1 - random.randrange(0, percent_1 - MIN_PERCENT, step) - step
     else:
-        percent_3 = percent_1 - random.randrange(0, 20, step) - step
+        percent_3 = percent_1 - random.randrange(0, select_range, step) - step
 
     return percent_1, percent_2, percent_3
 
@@ -186,15 +186,19 @@ def post_webhook():
                 # select level
                 if message_text == "初級":
                     step = 10
+                    sct_range = 20
                 elif message_text == "中級":
                     step = 5
+                    sct_range = 15
                 elif message_text == "上級":
                     step = 1
+                    sct_range = 10
                 else:
                     step = 5
+                    sct_range = 15
 
                 # create selections
-                percent_1, percent_2, percent_3 = create_selections(step)
+                percent_1, percent_2, percent_3 = create_selections(step, sct_range)
 
                 correct_percent = random.choice([percent_1, percent_2, percent_3])
 
