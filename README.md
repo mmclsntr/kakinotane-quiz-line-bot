@@ -1,5 +1,7 @@
 # Kakinotane Quiz LINE Bot
 
+![arch](docs/kakitaipi_arch.png)
+
 # Requirements
 - Serverless Framework
 - AWS CLI
