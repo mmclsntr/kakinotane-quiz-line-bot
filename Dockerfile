@@ -5,4 +5,4 @@ RUN yum update -y && yum install -y mesa-libGL mesa-libGL-devel mesa-libGLU-deve
 COPY . ./
 RUN pip install -r requirements.txt
 
-CMD ["line_webhook_lambda_handler.lambda_handler"]
+CMD ["lambda_handler.lambda_handler"]

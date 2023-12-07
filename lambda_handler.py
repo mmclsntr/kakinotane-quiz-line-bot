@@ -1,11 +1,19 @@
 import os
 import random
 import re
+import uuid
 
 from aws_lambda_powertools import Logger
-from aws_lambda_powertools.event_handler import LambdaFunctionUrlResolver
+from aws_lambda_powertools.event_handler import LambdaFunctionUrlResolver, Response
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.utilities.typing import LambdaContext
+from aws_lambda_powertools.event_handler.exceptions import (
+    BadRequestError,
+    InternalServerError,
+    NotFoundError,
+    ServiceError,
+    UnauthorizedError,
+)
 
 from linebot.v3 import (
     WebhookParser
@@ -252,6 +260,33 @@ def post_webhook():
                         )
                     )
 
+    return {}
+
+
+@app.get("/kakipi/<ratio>")
+def get_kakipi(ratio: str):
+    try:
+        r = float(ratio)
+    except ValueError:
+        raise BadRequestError("Ratio must be from 0 to 1.")
+
+    if r > 1 or r < 0:
+        raise BadRequestError("Ratio must be from 0 to 1.")
+
+    logger.info(ratio)
+
+    # Generate kakinotane image
+    output_local = "/tmp/{}.jpg".format(uuid.uuid4())
+    kakinotane_image.create_kakinotane_image(r, output_file_name=output_local)
+
+    with open(output_local, 'rb') as f:
+        data = f.read()
+
+    return Response(status_code=200, content_type="image/jpeg", body=data)
+
+
+@app.get("/")
+def get_root():
     return {}
 
 
